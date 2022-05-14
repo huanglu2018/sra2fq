@@ -1,0 +1,97 @@
+
+configfile: "/public/huanglu/storage/gtex_rna_suqin/Heart-Left-Ventricle-276/config.yaml"
+
+import os,shutil
+
+os.chdir(config["gtexdir"])
+def mkdir(path):
+	path=path.strip()
+	path=path.rstrip("\\")
+	isExists=os.path.exists(path)
+	if not isExists:
+		os.makedirs(path) 
+		return True
+	else:
+		return False
+
+def mymovefile(srcfile,dstfile):
+	if not os.path.isfile(srcfile):
+		print("%s not exist!"%(srcfile))
+	else:
+		fpath,fname=os.path.split(dstfile)
+		if not os.path.exists(fpath):
+			os.makedirs(fpath)
+		shutil.move(srcfile,dstfile)
+		print("move %s -> %s"%( srcfile,dstfile))
+
+def mycopyfile(srcfile,dstfile):
+	if not os.path.isfile(srcfile):
+		print("%s not exist!"%(srcfile))
+	else:
+		fpath,fname=os.path.split(dstfile)
+		if not os.path.exists(fpath):
+			os.makedirs(fpath)
+		shutil.copyfile(srcfile,dstfile)
+		print("copy %s -> %s"%( srcfile,dstfile))
+
+# lambda wildcards: config["samples"][wildcards.sample]	
+mkdir(config["workdir"]+"/validate_result")
+mkdir(config["workdir"]+"/dump_result/dump_log")
+mkdir(config["workdir"]+"/dump_result/dump_sum")
+mkdir(config["workdir"]+"/dump_result/dump_finish")
+	
+SRRS=open(config["batchfile"]).read().split()
+sradir=config["sradir"]
+
+rule all:
+	input:
+		expand(config["workdir"]+"/validate_result"+"/{file}.validation_out",file=SRRS),
+		expand(config["workdir"]+"/dump_result/dump_log"+"/{file}.dump_result",file=SRRS)
+		
+rule validate:
+	input:
+		sradir+"/{SRRS}.sra"
+	output:
+		config["workdir"]+"/validate_result"+"/{SRRS}.validation_out"
+	priority:
+		1
+	shell:
+		"vdb-validate {input} &> {output} || true"
+		
+
+	
+rule dump:
+	input:
+		validation_log=rules.validate.output, #config["workdir"]+"/validate_result"+"/{SRRS}.validation_out",
+		sra=sradir+"/{SRRS}.sra"
+	output:	
+		config["workdir"]+"/dump_result/dump_log"+"/{SRRS}.dump_result"
+	priority:
+		2
+	params:
+		workdir=config["workdir"],
+		dump_finish_dir=config["workdir"]+"/dump_result/dump_finish"
+	shell:
+		"""
+		if grep -q 'err' {input.validation_log}
+		then
+			echo {wildcards.SRRS} > {params.workdir}/dump_result/dump_sum/{wildcards.SRRS}_validation_failed.txt
+			echo {input.validation_log} failed ! no dumping > {output}
+		else
+			fastq-dump -v -B --gzip --split-3 -O {params.workdir}/dump_result {input.sra}
+			echo {input.validation_log} succeed ! now dumping > {output}
+			if [ $? -eq 0 ]
+			then
+				mv {params.workdir}/dump_result/{wildcards.SRRS}_* {params.dump_finish_dir}/
+				mv {params.workdir}/dump_result/{wildcards.SRRS}.* {params.dump_finish_dir}/ || true
+				rm {input.sra}
+				echo {input.sra} dump succeed >> {output}
+			else
+				echo {wildcards.SRRS} > {params.workdir}/dump_result/dump_sum/{wildcards.SRRS}_dump_failed.txt
+				echo {input.sra} dump failed >> {output}
+			fi
+		fi
+		"""
+
+
+		

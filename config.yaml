@@ -1,0 +1,10 @@
+batchfile:
+    "/public/huanglu/storage/gtex_rna_suqin/Heart-Left-Ventricle-276/Heart-Left-Ventricle-276_sra.txt"
+threads:
+    5
+workdir:
+    "/public/huanglu/storage/gtex_rna_suqin/Heart-Left-Ventricle-276"
+sradir:
+    "/public/huanglu/storage/gtex_rna_suqin/Heart-Left-Ventricle-276/input"
+gtexdir:
+    "/home/tmp/ncbi/dbGaP-9455"
