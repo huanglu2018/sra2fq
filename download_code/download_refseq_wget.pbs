@@ -1,0 +1,9 @@
+#!/bin/bash
+#PBS -N refseq_wget
+#PBS -l nodes=node2:ppn=10
+#PBS -j n
+#PBS -q compute 
+#PBS -e ${PBS_JOBNAME}.err
+#PBS -o ${PBS_JOBNAME}.out
+
+Rscript /public/home/huanglu/download_code/download_refseq_wget.R

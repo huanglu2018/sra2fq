@@ -1,0 +1,9 @@
+#!/bin/bash
+#PBS -N check_fq
+#PBS -l nodes=node6:ppn=1
+#PBS -j n
+#PBS -q compute
+#PBS -e ./checkfq.err
+#PBS -o ./checkfq.txt
+
+Rscript /public/home/huanglu/download_code/check_gzip_integraty.R

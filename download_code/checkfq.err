@@ -1,0 +1,18 @@
+
+Attaching package: ‘reshape2’
+
+The following objects are masked from ‘package:data.table’:
+
+    dcast, melt
+
+Loading required package: foreach
+Loading required package: iterators
+Warning message:
+In dir.create(result_dir) :
+  '/node6-data1/share/huanglu/gtex/fq_gzip_check' already exists
+Warning message:
+In dir.create(dustbin) :
+  '/node6-data1/share/huanglu/gtex/fq_gzip_check/fq_gzip_fail' already exists
+Warning message:
+In dir.create(perfectbin) :
+  '/node6-data1/share/huanglu/gtex/fq_gzip_check/fq_gzip_success' already exists
